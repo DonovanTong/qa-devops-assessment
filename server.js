@@ -1,20 +1,16 @@
 const express = require('express')
-const path = require('path')
+// const path = require('path')
 const app = express()
 const {bots, playerRecord} = require('./data')
 const {shuffleArray} = require('./utils')
 
 app.use(express.json())
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, "./public/index.html"))
-})
-app.get('/css', (req, res) => {
-    res.sendFile(path.join(__dirname, "./public/index.css"))
-})
-app.get('/js', (req, res) => {
-    res.sendFile(path.join(__dirname, "./public/index.js"))
-})
+const { home, homeCss, homeJs } = require('./controller/pageCtrl')
+
+app.get('/', home)
+app.get('/styles', homeCss)
+app.get('/js', homeJs)
 
 app.get('/api/robots', (req, res) => {
     try {
