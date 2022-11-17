@@ -3,10 +3,21 @@ const express = require('express')
 const app = express()
 const {bots, playerRecord} = require('./data')
 const {shuffleArray} = require('./utils')
+require('dotenv').config()
 
 app.use(express.json())
 
 const { home, homeCss, homeJs } = require('./controller/pageCtrl')
+
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: process.env.ROLLBAR_TOKEN,
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+
+// record a generic message and send it to Rollbar
+rollbar.log('Hello world!')
 
 app.get('/', home)
 app.get('/styles', homeCss)
@@ -18,21 +29,25 @@ app.get('/js', homeJs)
 
 app.get('/api/robots', (req, res) => {
     try {
+        rollbar.log('someone used your website!')
         res.status(200).send(botsArr)
     } catch (error) {
         console.log('ERROR GETTING BOTS', error)
+        rollbar.critical('ERROR GETTING BOTS')
         res.sendStatus(400)
     }
 })
 
 app.get('/api/robots/five', (req, res) => {
     try {
+        rollbar.log('Player clicked draw')
         let shuffled = shuffleArray(bots)
         let choices = shuffled.slice(0, 5)
         let compDuo = shuffled.slice(6, 8)
         res.status(200).send({choices, compDuo})
     } catch (error) {
         console.log('ERROR GETTING FIVE BOTS', error)
+        rollbar.error('ERROR GETTING FIVE BOTS')
         res.sendStatus(400)
     }
 })
@@ -64,6 +79,7 @@ app.post('/api/duel', (req, res) => {
         }
     } catch (error) {
         console.log('ERROR DUELING', error)
+        rollbar.error('ERROR DUELING BOTS')
         res.sendStatus(400)
     }
 })
